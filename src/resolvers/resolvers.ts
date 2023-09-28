@@ -34,7 +34,9 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       args: { forumId: string },
       context: Context
     ): Message[] =>
-      context.messages.filter((message) => message.forumId === args.forumId),
+      context.messages
+        .filter((message) => message.forumId === args.forumId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
   },
 
   Mutation: {
