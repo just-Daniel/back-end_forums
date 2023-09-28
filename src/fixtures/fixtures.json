@@ -1,0 +1,98 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Joy",
+      "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png",
+      "forums": [
+        {
+          "id": "1",
+          "name": "War in Ukraine",
+          "users": [
+            {
+              "id": "1",
+              "name": "Joy",
+              "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+            }
+          ],
+          "messages": [
+            {
+              "id": "1",
+              "forumId": "1",
+              "user": {
+                "id": "1",
+                "name": "Joy",
+                "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+              },
+              "text": "Why people lives?",
+              "createdAt": "2023-09-27T23:48:06.531Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "John",
+      "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png",
+      "forums": []
+    }
+  ],
+  "messages": [
+    {
+      "id": "1",
+      "forumId": "1",
+      "user": {
+        "id": "1",
+        "name": "Joy",
+        "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+      },
+      "text": "Why people lives?",
+      "createdAt": "2023-09-27T23:48:06.531Z"
+    }
+  ],
+  "forums": [
+    {
+      "id": "1",
+      "name": "War in Ukraine",
+      "users": [
+        {
+          "id": "1",
+          "name": "Joy",
+          "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+        }
+      ],
+      "messages": [
+        {
+          "id": "1",
+          "forumId": "1",
+          "user": {
+            "id": "1",
+            "name": "Joy",
+            "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+          },
+          "text": "Where people lives?",
+          "createdAt": "2023-09-27T23:48:06.531Z"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Finance",
+      "users": [
+        {
+          "id": "2",
+          "name": "John",
+          "picture": "https://cdn-icons-png.flaticon.com/128/6387/6387915.png"
+        }
+      ],
+      "messages": []
+    },
+    {
+      "id": "3",
+      "name": "Ecology",
+      "users": [],
+      "messages": []
+    }
+  ]
+}
