@@ -5,11 +5,23 @@ import { Message } from '../interfaces/message.interface';
 import { Context } from '../interfaces/context.interface';
 
 const getUserById = (userId: string, context: Context): User | undefined => {
-  return context.users.find((user) => user.id === userId);
+  const user = context.users.find((user) => user.id === userId);
+
+  if (user) {
+    return user;
+  } else {
+    throw new Error(`The User with ID "${userId}" does not exist.`);
+  }
 };
 
 const getForumById = (forumId: string, context: Context): Forum | undefined => {
-  return context.forums.find((forum) => forum.id === forumId);
+  const forum = context.forums.find((forum) => forum.id === forumId);
+
+  if (forum) {
+    return forum;
+  } else {
+    throw new Error(`The Forum with ID "${forumId}" does not exist.`);
+  }
 };
 
 type ForumAndUser = {
@@ -21,22 +33,24 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
   Query: {
     getUsers: (_parent, _args, context: Context): User[] => context.users,
     getForums: (_parent, _args, context: Context): Forum[] => context.forums,
-    getForum: (_parent, args: { forumId: string }, context: Context) =>
-      context.forums.find((i) => i.id === args.forumId),
+    getForum: (_parent, { forumId }: { forumId: string }, context: Context) =>
+      getForumById(forumId, context),
     getUserJoinedForums: (
       _parent,
-      args: { userId: string },
+      { userId }: { userId: string },
       context: Context
-    ): Forum[] | undefined =>
-      context.users.find((user) => user.id === args.userId)?.forums,
+    ): Forum[] | undefined => getUserById(userId, context)?.forums,
     getMessages: (
       _parent,
-      args: { forumId: string },
+      { forumId }: { forumId: string },
       context: Context
-    ): Message[] =>
-      context.messages
-        .filter((message) => message.forumId === args.forumId)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    ): Message[] => {
+      getForumById(forumId, context);
+
+      return context.messages
+        .filter((message) => message.forumId === forumId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
   },
 
   Mutation: {
@@ -49,11 +63,11 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       const user = getUserById(userId, context);
 
       if (name.trim().length <= 0) {
-        throw new Error(`Field name cannot be empty`);
+        throw new Error(`Field name cannot be empty.`);
       }
 
       if (!user) {
-        throw new Error(`User with ID ${userId} not found`);
+        throw new Error(`User with ID ${userId} not found.`);
       }
 
       const newForum = {
@@ -72,7 +86,7 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       _parent,
       args: { userId: string; forumId: string },
       context: Context
-    ): ForumAndUser | Error=> {
+    ): ForumAndUser | Error => {
       const { userId, forumId } = args;
       const user = getUserById(userId, context);
       const forum = getForumById(forumId, context);
@@ -107,12 +121,14 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       const forum = getForumById(forumId, context);
 
       if (text.trim().length <= 0) {
-        throw new Error(`Field "text" cannot be empty`);
+        throw new Error(`Field "text" cannot be empty.`);
       }
 
       if (user && forum) {
         if (!user.forums.some((forum) => forum.id === args.forumId)) {
-          throw new Error(`User with ID "${userId}" is not a member of the forum!`);
+          throw new Error(
+            `User with ID "${userId}" is not a member of the forum.`
+          );
         }
 
         const newMessage = {
