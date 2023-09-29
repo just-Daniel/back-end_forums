@@ -56,58 +56,57 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
   Mutation: {
     createForum: (
       _parent,
-      args: { name: string; userId: string },
+      { name, userId }: { name: string; userId: string },
       context: Context
-    ): Forum | Error => {
-      const { name, userId } = args;
+    ): Forum | undefined => {
       const user = getUserById(userId, context);
 
       if (name.trim().length <= 0) {
-        throw new Error(`Field name cannot be empty.`);
+        throw new Error(`Field "name" cannot be empty.`);
       }
 
-      if (!user) {
-        throw new Error(`User with ID ${userId} not found.`);
+      if (user) {
+        const newForum = {
+          id: `${context.forums.length + 1}`,
+          name,
+          users: [user],
+          messages: [],
+        };
+
+        context.forums.push(newForum);
+
+        return newForum;
       }
-
-      const newForum = {
-        id: `${context.forums.length + 1}`,
-        name,
-        users: [user],
-        messages: [],
-      };
-
-      context.forums.push(newForum);
-
-      return newForum;
     },
 
     joinForum: (
       _parent,
-      args: { userId: string; forumId: string },
+      { userId, forumId }: { userId: string; forumId: string },
       context: Context
-    ): ForumAndUser | Error => {
-      const { userId, forumId } = args;
+    ): ForumAndUser | undefined => {
       const user = getUserById(userId, context);
       const forum = getForumById(forumId, context);
 
       if (user && forum) {
-        if (!user.forums.some((forum) => forum.id === forumId)) {
-          user.forums.push(forum);
+        if (user.forums.some((joinedForum) => joinedForum.id === forumId)) {
+          throw new Error(
+            `User with ID ${userId} is already a member of the forum with ID ${forumId}.`
+          );
         }
-        if (!forum.users.some((user) => user.id === userId)) {
-          forum.users.push(user);
+
+        if (forum.users.some((forumUser) => forumUser.id === userId)) {
+          throw new Error(
+            `Forum with ID ${forumId} already contains the user with ID ${userId}.`
+          );
         }
+
+        user.forums.push(forum);
+        forum.users.push(user);
+
         return {
           forum,
           user,
         };
-      } else {
-        const errorMessage = !forum
-          ? `The Forum with ID "${forumId}" does not exist.`
-          : `The User with ID "${userId}" does not exist.`;
-
-        throw new Error(errorMessage);
       }
     },
 
@@ -115,7 +114,7 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       _parent,
       args: { userId: string; forumId: string; text: string },
       context: Context
-    ): Message | Error => {
+    ): Message | undefined => {
       const { userId, forumId, text } = args;
       const user = getUserById(userId, context);
       const forum = getForumById(forumId, context);
@@ -143,13 +142,7 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
         context.messages.push(newMessage);
 
         return newMessage;
-      } else {
-        const errorMessage = !forum
-          ? `The Forum with ID "${forumId}" does not exist.`
-          : `The User with ID "${userId}" does not exist.`;
-
-        throw new Error(errorMessage);
-      }
+      } 
     },
   },
 };
