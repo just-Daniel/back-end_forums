@@ -44,12 +44,16 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       _parent,
       args: { name: string; userId: string },
       context: Context
-    ): Forum => {
+    ): Forum | Error => {
       const { name, userId } = args;
       const user = getUserById(userId, context);
 
+      if (name.trim().length <= 0) {
+        throw new Error(`Field name cannot be empty`);
+      }
+
       if (!user) {
-        throw new Error('User not found.');
+        throw new Error(`User with ID ${userId} not found`);
       }
 
       const newForum = {
@@ -68,7 +72,7 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       _parent,
       args: { userId: string; forumId: string },
       context: Context
-    ): ForumAndUser => {
+    ): ForumAndUser | Error=> {
       const { userId, forumId } = args;
       const user = getUserById(userId, context);
       const forum = getForumById(forumId, context);
@@ -81,11 +85,15 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
           forum.users.push(user);
         }
         return {
-          forum: forum,
+          forum,
           user,
         };
       } else {
-        throw new Error(`Forum or user not exist`);
+        const errorMessage = !forum
+          ? `The Forum with ID "${forumId}" does not exist.`
+          : `The User with ID "${userId}" does not exist.`;
+
+        throw new Error(errorMessage);
       }
     },
 
@@ -93,14 +101,18 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
       _parent,
       args: { userId: string; forumId: string; text: string },
       context: Context
-    ): Message => {
+    ): Message | Error => {
       const { userId, forumId, text } = args;
       const user = getUserById(userId, context);
       const forum = getForumById(forumId, context);
 
+      if (text.trim().length <= 0) {
+        throw new Error(`Field "text" cannot be empty`);
+      }
+
       if (user && forum) {
         if (!user.forums.some((forum) => forum.id === args.forumId)) {
-          throw new Error(`User is not a member of the forum!`);
+          throw new Error(`User with ID "${userId}" is not a member of the forum!`);
         }
 
         const newMessage = {
@@ -116,7 +128,11 @@ const resolvers: ApolloServerExpressConfig['resolvers'] = {
 
         return newMessage;
       } else {
-        throw new Error(`Forum or user not found!`);
+        const errorMessage = !forum
+          ? `The Forum with ID "${forumId}" does not exist.`
+          : `The User with ID "${userId}" does not exist.`;
+
+        throw new Error(errorMessage);
       }
     },
   },
